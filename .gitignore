@@ -1,0 +1,53 @@
+# LaTeX
+thesis/*.aux
+thesis/*.bbl
+thesis/*.bcf
+thesis/*.blg
+thesis/*.fdb_latexmk
+thesis/*.fls
+thesis/*.log
+thesis/*.out
+thesis/*.run.xml
+thesis/*.synctex.gz
+thesis/*.toc
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+
+# Unity
+app/[Ll]ibrary/
+app/[Tt]emp/
+app/[Oo]bj/
+app/[Bb]uild/
+app/[Bb]uilds/
+app/[Ll]ogs/
+app/[Uu]ser[Ss]ettings/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE (optional)
+.idea/
+*.swp
+*.swo
+*~

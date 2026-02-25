@@ -1,0 +1,75 @@
+% language
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+% math commands
+\usepackage{amsmath,amssymb}
+
+% bibliography
+\usepackage{IEEEtrantools}
+\bstctlcite{IEEEexample:BSTcontrol}
+\bibliographystyle{IEEEtran}
+
+% insert figures
+\usepackage{graphicx}
+\pdfminorversion=7
+
+% use consistent style for units (upright shape)
+% \unit[value]{unit}, \unitfrac[value]{unit_numerator}{unit_denominator}
+\usepackage{units}
+
+% tables
+\usepackage{array}
+\renewcommand{\arraystretch}{1.3}
+
+% Listings (for code)
+\usepackage{listings}
+\usepackage{scrhack}
+\lstset{numbers=left,numberstyle=\tiny,stepnumber=5,numbersep=5pt}
+
+% Headers and footers
+\usepackage{scrlayer-scrpage}
+\automark{chapter}
+\cfoot*{\footnotesize\pagemark}
+\chead{}
+\ohead{\footnotesize\sc\headmark}
+
+
+% Hyperlinks
+\usepackage[colorlinks=true, allcolors=black, bookmarksnumbered=true]{hyperref}
+\usepackage{bookmark}
+
+% Helvetica font
+\usepackage{helvet}
+\renewcommand{\familydefault}{phv}
+
+% spacing
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1.5ex plus0.5ex minus0.5ex}
+
+% margins
+\usepackage[tmargin=1in,bmargin=1in,lmargin=1.25in,rmargin=1.25in]{geometry}
+
+% automatically use correct quotes for the current language: \enquote{text in quotes}
+\usepackage{csquotes}
+\MakeAutoQuote{»}{«}  % input »text in quotes« is equivalent to \enquote{text in quotes}
+\let\q=\enquote % use \q{text in quotes}, which is shorter than \enquote{text in quotes}
+
+% erweiterte Einstellungen der Bildunterschriften -> 8 Pt
+\usepackage[small]{caption}
+\captionsetup{belowskip=12pt,aboveskip=4pt}
+\usepackage{subcaption} % group multiple figures together
+
+\usepackage{microtype}
+\usepackage{placeins}
+\DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
+
+% page numbers
+\usepackage{tocbasic}
+\DeclareTOCStyleEntry[pagenumberwidth=2em]{tocline}{chapter}
+\DeclareTOCStyleEntry[pagenumberwidth=2em]{tocline}{section}
+\DeclareTOCStyleEntry[pagenumberwidth=2em]{tocline}{subsection}
+\DeclareTOCStyleEntry[pagenumberwidth=2em]{tocline}{figure}
+\DeclareTOCStyleEntry[pagenumberwidth=2em]{tocline}{table}

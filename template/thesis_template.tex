@@ -1,0 +1,74 @@
+% !TEX encoding = IsoLatin2  % required comment line for Mac-Users.
+
+% LaTeX-Template Version Dezember 2015
+% erstellt von Dr. Andreas Drauschke und Dr. Susanne Teschl
+% modified by Yunus Schmirander, Juni 2021
+
+
+
+\documentclass[a4paper,oneside,11pt,headsepline,listof=totoc,bibliography=totoc]{scrreprt}
+% Use document class "scrartcl" for short works which require "section" as highest level instead of chapter
+
+% Fill out data for cover page here
+\def\title{Title}
+\def\study{Medical \& Sports Technologies}
+\def\thesis{Master Thesis}
+\def\degree{"Master of Science in Engineering"}
+\def\student{Max Mustermann}
+\def\matnr{Student ID}
+\def\supervisorone{Dr. Martina Musterfrau}
+
+% Include command for supervisor 2 if thesis is supervised externally
+\def\supervisortwo{Dr. Markus Mustermann}
+
+\input{layout/packages.tex}
+
+
+\begin{document}
+\pagenumbering{roman}
+\input{layout/titlepage.tex}
+
+% Non disclosure agreement - only if applicable
+% insert correct preclusion date
+\def\preclusiondate{ddth MonthFullName, yyyy}
+\input{layout/nda.tex}
+
+%Declaration in Lieu of Oath and on the use of AI tools
+%NOTE: The Declaration in Lieu of Oath and the Declaration on the Use of AI Tools must be included in the thesis and also submitted as a separate document. They may, however, be combined into a single file.
+\input{layout/oath.tex}
+\input{layout/ai.tex}
+
+\input{chapters/acknowledgements.tex} % optional
+\input{chapters/abstract.tex}
+
+\pdfbookmark{\contentsname}{toc}
+\tableofcontents\thispagestyle{empty}
+
+% List of tables and list of figures
+\listoffigures
+\listoftables
+
+% abbreviations and symbols (optional)
+\input{chapters/abbreviations.tex}
+
+\clearpage
+\pagenumbering{arabic}
+
+\input{chapters/chapter1.tex}
+\input{chapters/chapter2.tex}
+\input{chapters/chapter3.tex}
+\input{chapters/chapter4.tex}
+\input{chapters/chapter5.tex}
+
+%References
+\bibliography{references.bib}
+\label{ch:bib}
+
+% Appendix
+\appendix
+\input{chapters/appendixA.tex}
+\input{chapters/appendixB.tex}
+
+% attach CV at the end (optional)
+
+\end{document}

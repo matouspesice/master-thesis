@@ -1,0 +1,9 @@
+# Real-time pose from webcam (RTMPose via rtmlib)
+# Install: pip install -r requirements.txt
+#
+# Default is CPU (no CUDA errors). For GPU: install onnxruntime-gpu and ensure
+# CUDA 12 + cuDNN 9 are on PATH, then run with --device cuda.
+
+opencv-python>=4.8.0
+rtmlib
+onnxruntime

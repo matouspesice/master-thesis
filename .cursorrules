@@ -1,0 +1,23 @@
+# Master Thesis Project — AI Assistant Rules
+
+## Scope
+- **thesis/** — LaTeX thesis (formal academic tone, proper citations, correct math).
+- **app/** — MMPose/screen-based app (Python, plus display layer): prioritize low-latency and clean, maintainable code.
+- **references/** — Use BibTeX keys from `references/bibliography.bib` for all citations; do not invent keys.
+- **data/** — Pilot study data (CSV, logs); treat as read-only in suggestions unless asked to process.
+
+## Thesis (LaTeX)
+- Use a formal academic tone. Write in British or American English as set in the template; be consistent.
+- All citations must use `\cite{}`, `\citep{}`, `\citet{}` with keys that exist in `references/bibliography.bib`.
+- All mathematics must be in proper LaTeX (e.g. `$...$`, `\[...\]`, `\begin{equation}...`).
+- When generating text from the literature, base it on the actual .bib entries and their metadata; do not invent findings.
+- Prefer structuring, formatting, and describing technical content; leave clinical discussion and personal reflections to the author.
+
+## App (Code)
+- Prioritise low-latency optimisation in the motion-tracking and screen-based feedback pipeline (MMPose).
+- Prefer clean, readable C#, C++, and Python; follow existing project style if present.
+- When asked to document code for the thesis, generate LaTeX descriptions, TikZ diagrams, or pseudocode suitable for the Methodology chapter.
+- Keep variable names and numeric constants (e.g. thresholds) consistent between code and thesis when cross-referencing.
+
+## Diagrams and figures
+- TikZ and Mermaid are preferred for system/architecture diagrams. Mermaid can be exported to images for inclusion in the thesis.

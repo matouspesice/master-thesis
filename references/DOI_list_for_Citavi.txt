@@ -1,0 +1,21 @@
+# DOIs for one-by-one import in Citavi
+# In Citavi: References > Add > Add Reference by Identifier > paste each DOI below
+# One DOI per line (skip lines starting with #)
+
+10.48550/arXiv.2303.07399
+10.48550/arXiv.1906.08172
+10.1109/CVPR.2017.143
+10.1371/journal.pone.0224819
+10.1093/ptj/pzx107
+10.1016/j.chb.2017.01.013
+10.3389/frobt.2019.00147
+10.1080/10833196.2021.1906366
+10.1016/j.gaitpost.2014.12.016
+10.3389/frobt.2018.00112
+10.3390/jcm10040679
+10.2522/ptj.20130571
+10.1109/TVCG.2022.3150506
+10.1109/TVCG.2016.2518135
+10.1080/15213269.2015.1015740
+10.1109/CVPR46437.2021.00256
+10.1109/CVPR.2019.00584

@@ -1,0 +1,73 @@
+% Master Thesis — Low-Latency ML-Based Motion Tracking for Gamified Knee Rehabilitation in VR
+% MCI Health Tech — MA I Program
+% Uses MCI thesis template structure (template/)
+% Build: pdflatex → bibtex → pdflatex → pdflatex (from thesis/)
+
+% Encoding (optional for Mac)
+% !TEX encoding = UTF-8
+
+\documentclass[a4paper,oneside,11pt,headsepline,listof=totoc,bibliography=totoc]{scrreprt}
+
+% ---------- Cover page and metadata (MCI template) ----------
+\def\title{Development of a Low-Latency ML-Based Motion Tracking System for Gamified Knee Rehabilitation in Virtual Reality}
+\def\study{Medical \& Health Technologies}
+\def\thesis{Master Thesis}
+\def\degree{Master of Science in Engineering}
+\def\student{Matouš Pešice}
+\def\matnr{52006687}
+\def\supervisorone{Prof. Bernhard Hollaus, PhD}
+% Internal supervisor if applicable (optional)
+% \def\supervisortwo{}
+
+\input{../template/layout/packages.tex}
+\usepackage{booktabs} % for \toprule, \midrule, \bottomrule in tables
+\usepackage{tabularx} % for tables that match text width
+
+% Numbered references [1], [2] and clickable links (load after template packages)
+\usepackage[numbers,sort&compress]{natbib}
+% Bibliography style: use template default (IEEEtran) — see template/layout/packages.tex
+
+\begin{document}
+\pagenumbering{roman}
+\input{../template/layout/titlepage.tex}
+
+% Non-disclosure agreement — uncomment and set date if applicable
+% \def\preclusiondate{ddth MonthFullName, yyyy}
+% \input{../template/layout/nda.tex}
+
+\input{../template/layout/oath.tex}
+\input{../template/layout/ai.tex}
+
+\input{chapters/acknowledgements.tex}
+\input{chapters/abstract.tex}
+
+\pdfbookmark{\contentsname}{toc}
+\tableofcontents\thispagestyle{empty}
+
+\listoffigures
+\listoftables
+
+\input{chapters/abbreviations.tex}
+
+\clearpage
+\pagenumbering{arabic}
+
+% ---------- Thesis chapters ----------
+\input{chapters/introduction.tex}
+\input{chapters/related_work.tex}
+\input{chapters/methodology.tex}
+\input{chapters/implementation.tex}
+\input{chapters/evaluation.tex}
+\input{chapters/discussion.tex}
+\input{chapters/conclusion.tex}
+
+% ---------- References ----------
+\bibliography{../references/bibliography}
+\label{ch:bib}
+
+% ---------- Appendix ----------
+\appendix
+\input{chapters/appendixA.tex}
+\input{chapters/appendixB.tex}
+
+\end{document}
