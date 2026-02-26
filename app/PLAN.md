@@ -19,7 +19,7 @@
 - **No special specs needed** for the first version. The app uses:
   - Default webcam (device index `0`).
   - **rtmlib** (RTMPose models via ONNX) — runs on **CPU** by default; add GPU later if you have CUDA.
-- **Camera switching:** Change one setting (e.g. `--camera 0` at home, `--camera 1` in lab) or a config file. No code change.
+- **Camera switching:** Change one setting (e.g. `--camera 0` at home, `--camera 1` in lab) or a config file (`pose_webcam.json`; see `pose_webcam.example.json`). No code change.
 
 ## Where things live
 

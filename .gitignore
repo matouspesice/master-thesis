@@ -19,14 +19,17 @@ __pycache__/
 .venv
 venv/
 
-# Unity
+# Unity (app and architect)
 app/[Ll]ibrary/
 app/[Tt]emp/
 app/[Oo]bj/
-app/[Bb]uild/
-app/[Bb]uilds/
-app/[Ll]ogs/
-app/[Uu]ser[Ss]ettings/
+architect/[Ll]ibrary/
+architect/[Tt]emp/
+architect/[Oo]bj/
+architect/[Ll]ogs/
+architect/[Uu]ser[Ss]ettings/
+architect/[Bb]uild/
+architect/[Bb]uilds/
 *.csproj
 *.unityproj
 *.sln

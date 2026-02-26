@@ -1,0 +1,14 @@
+{
+  "camera": 0,
+  "backend": "rtmlib",
+  "device": "cpu",
+  "mode": "balanced",
+  "det_frequency": 5,
+  "width": 0,
+  "height": 0,
+  "threaded": false,
+  "no_viz": false,
+  "show_fps": false,
+  "udp_port": 0,
+  "udp_host": "127.0.0.1"
+}
