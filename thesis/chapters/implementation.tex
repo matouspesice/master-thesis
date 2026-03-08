@@ -4,13 +4,23 @@
 \chapter{Implementation}\label{ch:implementation}
 
 \section{Software and Hardware Setup}
-% Setup: screen-based display (no VR headset), RGB camera, MMPose (e.g. RTMPose) for tracking.
+
+The system uses a screen-based display (no VR headset in the current prototype), a single RGB camera (e.g.\ USB 3.0 webcam at 720p or 1080p, 60\,FPS), and MMPose/RTMPose for real-time pose estimation. The pose pipeline runs in a Python application (\texttt{pose\_webcam.py}) that captures frames, runs inference, and optionally broadcasts pose data over UDP to the Unity-based Architect game. Camera placement follows the protocol described in Section~\ref{sec:motion-capture}: frontal or slight angle, full body or lower body and trunk in frame.
 
 \section{Tracking Pipeline}
-% TODO: Detail of ML extraction, preprocessing, latency optimisation.
+
+The tracking pipeline is top-down: a person detector runs every $N$ frames (configurable \texttt{det\_frequency}), and pose estimation is applied to the detected region. The RTMPose model (rtmlib backend with ONNX, or optionally MMPose with PyTorch) outputs COCO-17 keypoints. Input resolution can be reduced (e.g.\ lightweight mode with 192$\times$256 pose input) to lower inference time at the cost of some accuracy. Capture buffer size is set to one frame where supported, so the application reads the newest frame and minimises capture latency. Optional one-tap exponential smoothing of pose keypoints is available for display stability; smoothing is disabled (alpha = 0) when minimising latency is the priority. For the pilot evaluation in this thesis, smoothing was left disabled so that reported latency and perceived responsiveness reflect the minimal-latency configuration.
 
 \section{Screen-Based Application and Game Logic}
-% TODO: "Architect" game integration, avatar/visual feedback on screen.
+
+The Architect application (Unity) receives pose JSON over UDP, parses COCO-17 keypoints, and drives an on-screen avatar that mirrors the user's pose. Two game modes are implemented: Pose Dodge (match pose to pass obstacles; duck, jump, lean) and Single-Leg Balance (hold single-leg stance with low wobble). Game logic and UI are described in the project's \texttt{ARCHITECT\_GAME.md}; the same UDP protocol is used for latency measurement when the Python app and Unity run together.
 
 \section{Latency Measurement}
-% TODO: How end-to-end latency was measured and validated.
+
+Motion-to-photon latency is the standard quantity for VR responsiveness \cite{stauffert2021latency, warburton2023motionphoton}: the delay from the user's motion to the corresponding update on the display. For this thesis, latency was measured in two parts: (1)~\emph{tracking-loop latency} on the Python side (time from frame capture to pose ready), and (2)~(optionally) end-to-end motion-to-display when the Unity client is connected.
+
+\paragraph{Method.}
+The Python application records a high-resolution timestamp immediately after \texttt{cap.read()} and again after pose inference completes. The difference (capture-to-pose) is the tracking-loop latency per frame. When the \texttt{--log-latency} flag is set, these samples are collected in memory and, at exit, summary statistics are printed (mean, median, 95th percentile, sample count). Optionally, samples can be written to a CSV file for post-processing. This gives a reproducible way to obtain tracking-loop latency (in milliseconds) under a fixed configuration (camera, resolution, backend, device). The reported values are compared to the thresholds cited in the related work: 63\,ms (cybersickness), 125\,ms (body ownership), and the 50\,ms ideal for immersive VR.
+
+\paragraph{Reporting.}
+Results are reported in the Evaluation chapter as mean and 95th percentile (p95) of the tracking-loop latency, and interpreted with respect to the 63\,ms and 125\,ms thresholds. Full motion-to-photon (including Unity render and display) would require timestamping on the Unity side and is noted as an optional extension.

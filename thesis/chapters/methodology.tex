@@ -6,10 +6,15 @@
 \chapter{Methodology}\label{ch:methodology}
 
 \section{System Overview}
-% TODO: High-level pipeline: camera → ML → VR feedback.
 
-\section{Motion Capture Pipeline}
-% TODO: Sensor choice, ML model, latency budget.
+The system consists of a motion capture pipeline (single RGB camera and ML-based pose estimation) and a screen-based application (Architect game in Unity) that displays an avatar driven by the estimated pose. The high-level flow is: camera capture $\rightarrow$ pose inference (MMPose/RTMPose) $\rightarrow$ UDP broadcast of keypoints $\rightarrow$ Unity receives and drives the avatar. This chapter specifies the motion capture pipeline and gamification design; the implementation chapter describes the actual software and hardware setup and latency measurement.
+
+\section{Motion Capture Pipeline}\label{sec:motion-capture}
+
+The motion capture pipeline uses a single RGB camera and ML-based pose estimation (MMPose/RTMPose) to extract skeletal keypoints in real time. Sensor choice, model configuration, and latency budget are described in Chapter~\ref{ch:implementation}.
+
+\paragraph{Camera placement and user positioning.}
+Camera angle and user positioning affect pose estimation accuracy. For the Architect scenario (single-leg balance, lower-limb and trunk visibility), the following protocol is used: the camera is placed at roughly hip to chest height, facing the user frontally or at a slight angle (e.g.\ 0--15$^\circ$ off axis), at a distance such that the full body (or at least lower body and trunk) remains in frame during standing and single-leg stance. The user stands within the camera's field of view with minimal occlusion of keypoints (e.g.\ limbs not crossed). This aligns with literature recommendations for markerless pose estimation in rehabilitation \cite{francia2024mediapipe, plavoukou2025sensors} and with the requirements stated in the related work (Sections~\ref{sec:latency} and \ref{sec:sensing}).
 
 \section{Gamification Design}
 % TODO: "Architect" game mechanic, goal-oriented tasks, single-leg balance.

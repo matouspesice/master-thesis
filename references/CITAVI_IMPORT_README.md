@@ -1,5 +1,22 @@
 # Bibliography import for Citavi
 
+## Import your current bibliography into Citavi
+
+To load your **current** thesis references (`bibliography.bib`) into Citavi:
+
+1. Open **Citavi** and your project (or create a new project).
+2. Go to **File → Import → BibTeX file** (in Citavi 6/7: *File* menu, then *Import*).
+3. Select **`references/bibliography.bib`** (the full path is `references\bibliography.bib` in your thesis folder).
+4. In the import dialog:
+   - Choose whether to **import into** the current project or a new one.
+   - If Citavi asks about **field mapping**, accept the defaults (BibTeX → Citavi mapping is usually automatic).
+   - If you see **duplicate** options, choose “Skip duplicates” or “Merge” as you prefer.
+5. Click **OK** / **Import**. All entries from `bibliography.bib` (including the Scopus-added ones and DOIs) will appear in your Citavi project.
+
+You can then add, edit, or delete references in Citavi and **export** back to BibTeX (see “Your main bibliography file” below) to update `bibliography.bib` for LaTeX.
+
+---
+
 ## Source: Literature search document
 
 References were extracted from **VR Knee Rehab Motion Tracking Literature Search.docx** (10 main papers + works cited). Use **`from_literature_search.bib`** for a BibTeX file containing only those 10 articles with DOIs where available.

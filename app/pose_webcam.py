@@ -274,6 +274,18 @@ def parse_args():
         metavar="ALPHA",
         help="Optional one-tap pose smoothing 0=off (lowest latency), 0.5-0.7=light. Weight of new sample.",
     )
+    p.add_argument(
+        "--log-latency",
+        action="store_true",
+        help="Collect tracking-loop latency (capture-to-pose ms) and print summary at exit (mean, p95, n).",
+    )
+    p.add_argument(
+        "--latency-csv",
+        type=str,
+        default="",
+        metavar="PATH",
+        help="When --log-latency is set, write per-frame latency (loop_ms, infer_ms) to this CSV file.",
+    )
     return p.parse_args()
 
 
@@ -509,6 +521,8 @@ def main():
     if getattr(args, "smooth_pose", 0) > 0:
         print(f"Pose smoothing: alpha={args.smooth_pose} (0=off for lowest latency).")
 
+    if getattr(args, "log_latency", False):
+        print("Latency logging: ON (capture-to-pose ms). Summary at exit.")
     print(f"Backend: {backend}  Camera: {args.camera}  Device: {device}")
     if args.threaded:
         print("Threaded mode: capture+inference in background, display on main thread.")
@@ -521,6 +535,7 @@ def main():
     fps_alpha = 0.2
     fps_smooth = 30.0
     infer_smooth_ms = 10.0
+    latency_samples = []  # (loop_ms, infer_ms) when --log-latency
 
     if args.threaded:
         # Single-slot "latest" result; worker overwrites, main thread displays (decouples imshow from inference)
@@ -533,7 +548,12 @@ def main():
                 ok, frame = cap.read()
                 if not ok:
                     break
+                t_capture = time.perf_counter()
                 vis, infer_ms, n_persons, pose_data = run_frame(frame)
+                t_after = time.perf_counter()
+                if getattr(args, "log_latency", False):
+                    loop_ms = (t_after - t_capture) * 1000
+                    latency_samples.append((loop_ms, infer_ms))
                 send_pose_udp(udp_sock, args.udp_host, args.udp_port, pose_data, getattr(args, "smooth_pose", 0), udp_prev_pose)
                 with latest_lock:
                     nonlocal latest_result
@@ -564,10 +584,15 @@ def main():
                 else:
                     data = None
             if data is not None:
+                # Only measure FPS when we have a new frame (timestamp changed). In threaded
+                # mode the same result can be displayed many times, so elapsed would be ~0.
                 if prev_t is not None:
                     elapsed = data["t"] - prev_t
-                    fps_smooth = fps_alpha * (1.0 / max(elapsed, 1e-6)) + (1 - fps_alpha) * fps_smooth
-                prev_t = data["t"]
+                    if elapsed > 0:
+                        fps_smooth = fps_alpha * (1.0 / elapsed) + (1 - fps_alpha) * fps_smooth
+                        prev_t = data["t"]
+                else:
+                    prev_t = data["t"]
                 infer_smooth_ms = fps_alpha * data["infer_ms"] + (1 - fps_alpha) * infer_smooth_ms
                 draw_stats(data["vis"], fps_smooth, infer_smooth_ms, data["w"], data["h"], backend, device, data["n_persons"])
                 cv2.imshow(window_name, data["vis"])
@@ -576,14 +601,17 @@ def main():
         stop_worker.set()
     else:
         while True:
-            t0 = time.perf_counter()
             ok, frame = cap.read()
             if not ok:
                 break
-
+            t_capture = time.perf_counter()
             vis, infer_ms, n_persons, pose_data = run_frame(frame)
+            t_after = time.perf_counter()
+            if getattr(args, "log_latency", False):
+                loop_ms = (t_after - t_capture) * 1000
+                latency_samples.append((loop_ms, infer_ms))
             send_pose_udp(udp_sock, args.udp_host, args.udp_port, pose_data, getattr(args, "smooth_pose", 0), udp_prev_pose)
-            elapsed = time.perf_counter() - t0
+            elapsed = t_after - t_capture
             h, w = vis.shape[:2]
 
             fps_smooth = fps_alpha * (1.0 / max(elapsed, 1e-6)) + (1 - fps_alpha) * fps_smooth
@@ -601,6 +629,32 @@ def main():
         except Exception:
             pass
     cv2.destroyAllWindows()
+
+    # Latency summary (thesis: report mean, p95, n; compare to 63 ms / 125 ms thresholds)
+    if getattr(args, "log_latency", False) and latency_samples:
+        import statistics
+        loop_ms_list = [x[0] for x in latency_samples]
+        infer_ms_list = [x[1] for x in latency_samples]
+        n = len(loop_ms_list)
+        mean_loop = statistics.mean(loop_ms_list)
+        median_loop = statistics.median(loop_ms_list)
+        sorted_loop = sorted(loop_ms_list)
+        p95_idx = min(int(0.95 * n), n - 1) if n else 0
+        p95_loop = sorted_loop[p95_idx] if sorted_loop else 0
+        mean_infer = statistics.mean(infer_ms_list)
+        print("--- Latency (capture-to-pose) ---")
+        print(f"  n = {n}  |  mean = {mean_loop:.2f} ms  |  median = {median_loop:.2f} ms  |  p95 = {p95_loop:.2f} ms")
+        print(f"  inference mean = {mean_infer:.2f} ms")
+        csv_path = getattr(args, "latency_csv", "") or ""
+        if csv_path:
+            try:
+                with open(csv_path, "w", encoding="utf-8") as f:
+                    f.write("loop_ms,infer_ms\n")
+                    for a, b in latency_samples:
+                        f.write(f"{a:.3f},{b:.3f}\n")
+                print(f"  Wrote {n} rows to {csv_path}")
+            except OSError as e:
+                print(f"  Warning: could not write CSV: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":
