@@ -36,9 +36,36 @@ A major barrier to wider adoption is user discomfort. Simulator sickness (SS; sy
 \label{sec:latency}
 % ---------------------------------------------------------------------------
 
-Real-time pose estimation is the technical enabler for low-latency motion feedback in VR: the pipeline must turn raw camera frames into a stable skeleton representation fast enough that the user perceives the avatar as responding immediately to their movement. End-to-end motion-to-photon latency is the sum of (1) camera capture and transfer, (2) pose inference (and any filtering), and (3) rendering and display. A target of under 10\,ms for the tracking loop (capture + inference, possibly including light smoothing) leaves budget for rendering and display while staying below the 63\,ms cybersickness threshold \cite{stauffert2021latency}.
+Real-time pose estimation is the technical enabler for low-latency motion feedback in VR: the pipeline must turn raw camera frames into a stable skeleton representation fast enough that the user perceives the avatar as responding immediately to their movement. End-to-end motion-to-photon latency is the sum of (1) camera capture and transfer, (2) pose inference (and any filtering), and (3) rendering and display. A target of under 10\,ms for the tracking loop (capture + inference, possibly including light smoothing) leaves budget for rendering and display while staying below the 63\,ms cybersickness threshold \cite{caserman2019latency}.
 
 Capture latency can be reduced by minimising the number of buffered frames at the sensor or driver: when the application reads the ``newest'' frame instead of draining a multi-frame buffer, the delay between a real-world motion and the frame used for inference is smaller. On the inference side, latency can be traded against accuracy by (a) running the person detector only every $N$ frames and tracking pose in between (top-down pipelines), and (b) using smaller model variants (e.g.\ RTMPose-s or lightweight configurations) that sacrifice some accuracy for lower per-frame inference time. These design levers are relevant when targeting a sub-10\,ms tracking loop with consumer hardware; the methodology and implementation chapters describe how they are applied in the present system.
+
+Figure~\ref{fig:latency-pipeline} summarises the composition of motion-to-photon latency in a system such as the present one: from capture (sensor exposure, readout, transfer to host) through pose inference and optional filtering in Python, UDP transmission of keypoints, to Unity (parse, drive avatar, render) and finally display. Optimisation is applied at each stage: capture (camera choice, buffer size, Section~\ref{sec:sensing}), inference (model size, detector frequency, smoothing), and rendering (frame rate, minimal processing).
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      node distance=0.5cm and 0.35cm,
+      box/.style={rectangle, draw, rounded corners=1.5pt, minimum height=0.65cm, font=\small},
+      small/.style={font=\footnotesize},
+      arrow/.style={-{Stealth[length=1.8mm]}, thick}
+    ]
+    \node[box] (capture) {Capture};
+    \node[box, right=of capture] (infer) {Pose infer.};
+    \node[box, right=of infer] (udp) {UDP};
+    \node[box, right=of udp] (unity) {Unity};
+    \node[box, right=of unity] (disp) {Display};
+    \draw[arrow] (capture) -- (infer);
+    \draw[arrow] (infer) -- (udp);
+    \draw[arrow] (udp) -- (unity);
+    \draw[arrow] (unity) -- (disp);
+    \node[below=0.15cm of capture, small, align=center] {optim.: camera, buffer};
+    \node[below=0.15cm of infer, small, align=center] {optim.: model, det.\,freq.};
+    \node[below=0.15cm of unity, small, align=center] {optim.: parse, avatar, render};
+  \end{tikzpicture}
+  \caption{Motion-to-photon latency pipeline: capture $\rightarrow$ pose inference (Python) $\rightarrow$ UDP $\rightarrow$ Unity (parse, drive avatar, render) $\rightarrow$ display. The text under each stage describes the main optimisation levers for that stage (e.g.\ camera choice and buffer size for capture; model size and detector frequency for inference; parsing, avatar update, and rendering for Unity).}
+  \label{fig:latency-pipeline}
+\end{figure}
 
 \subsection{Pose estimation frameworks}
 
@@ -65,7 +92,7 @@ Raw pose outputs from ML models can exhibit high-frequency jitter, which is unde
 
 \subsection{Latency and cybersickness}
 
-In VR, the delay between the user's motion and the update of the visual display (motion-to-photon latency) directly affects presence, motor performance, and comfort. Literature on VR and sensorimotor control often cites motion-to-photon latency below 50\,ms as ideal for immersive interaction, whereas latencies above 90--130\,ms can degrade user performance \cite{stauffert2021latency, warburton2023motionphoton, kelkkanen2023latency}. Stauffert et al.\ \cite{stauffert2021latency} showed that end-to-end latency above 63\,ms induces significant cybersickness symptoms in immersive VR; motor performance and the perception of simultaneity degrade by about 75\,ms. Waltemate et al.\ \cite{waltemate2016impact} demonstrated in a CAVE setup with full-body avatars that the sense of body ownership and agency breaks down when tracking latency exceeds approximately 125\,ms. Table~\ref{tab:latency-thresholds} summarises thresholds reported in the literature; these motivate the thesis goal of a tracking loop under 10\,ms so that total motion-to-photon latency remains well below the 63\,ms comfort limit.
+In VR, the delay between the user's motion and the update of the visual display (motion-to-photon latency) directly affects presence, motor performance, and comfort. Literature on VR and sensorimotor control often cites motion-to-photon latency below 50\,ms as ideal for immersive interaction, whereas latencies above 90--130\,ms can degrade user performance \cite{caserman2019latency, warburton2023motionphoton, kelkkanen2023latency}. Caserman et al.\ \cite{caserman2019latency} showed that end-to-end latency above 63\,ms induces significant cybersickness symptoms in immersive VR (SSQ). Waltemate et al.\ \cite{waltemate2016impact} reported that motor performance and the perception of simultaneity degrade at approximately 75\,ms and that the sense of body ownership and agency breaks down when tracking latency exceeds approximately 125\,ms (CAVE setup with full-body avatars). Table~\ref{tab:latency-thresholds} summarises thresholds reported in the literature; these motivate the thesis goal of a tracking loop under 10\,ms so that total motion-to-photon latency remains well below the 63\,ms comfort limit.
 
 \begin{table}[htbp]
 \centering
@@ -76,14 +103,18 @@ In VR, the delay between the user's motion and the update of the visual display 
 Approx.\ threshold & Effect & Source \\
 \midrule
 16--20\,ms & Perceptual threshold (delay noticeable in fast scenarios) & \cite{ellis2004generalizeability} \\
-63\,ms & Significant cybersickness (SSQ) & \cite{stauffert2021latency} \\
-75\,ms & Motor performance \& simultaneity impaired & \cite{stauffert2021latency} \\
+63\,ms & Significant cybersickness (SSQ) & \cite{caserman2019latency} \\
+75\,ms & Motor performance \& simultaneity impaired & \cite{waltemate2016impact} \\
 125\,ms & Body ownership \& agency begin to break down & \cite{waltemate2016impact} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 Frame rate also affects comfort: higher frame rate reduces frame time and perceptual mismatch. Industry and usability reports suggest that 72\,Hz (or higher) significantly improves tolerance compared to 60\,Hz in active VR scenarios \cite{battlestart2024fps}. For rehabilitation, targeting 72--90\,Hz or higher is advisable so that patients can focus on the exercise rather than discomfort.
+
+\subsection{Measuring motion-to-photon latency}
+
+To evaluate and report the latency of a tracking-and-display system, the full motion-to-photon delay must be measured in the actual hardware and software configuration. Feldstein and Ellis \cite{feldstein2021video} describe a low-cost technique using an ordinary consumer camera (e.g.\ a smartphone) and a human evaluator: the camera records both the user's real motion and the system's displayed response in the same frame, and frame-by-frame analysis yields the time difference between the real event and the displayed event. No specialised hardware or software is required, so the method can be applied to any configuration; they report measurement uncertainty below 10\,ms, with refinements potentially reducing it to approximately 1\,ms. Warburton et al.\ \cite{warburton2023motionphoton} developed a high-speed camera-based method (240\,fps smartphone) that co-registers real and virtual movements by matching the display's visible frame content (e.g.\ screen colour driven by the application) to the application's frame timeline, then detects movement onset in both real and virtual data to compute latency at movement start and across the trajectory. Their technique revealed that sudden movement onset yields higher latencies (21--42\,ms in tested VR headsets) than during steady motion, when prediction can reduce effective latency to 2--13\,ms. For the present thesis, a video-based approach is adopted: a high-frame-rate camera (e.g.\ 240\,fps smartphone) records the user and the display together; real and display movement onsets are identified and co-registered (e.g.\ via an on-screen frame indicator); latency is computed from the frame difference. This is described in the Methodology and Evaluation chapters.
 
 % ---------------------------------------------------------------------------
 \section{Gamification and Motor Learning}
@@ -115,33 +146,35 @@ Conventional knee exercises often suffer from low patient engagement and adheren
 \section{Sensing Hardware and Camera Choice}\label{sec:sensing}
 % ---------------------------------------------------------------------------
 
-\subsection{Requirements for pose estimation and lab setup}
+\subsection{Camera choice for low-latency capture}
 
-Pose estimation models typically resize input to modest resolutions (e.g.\ 256$\times$256 or 384$\times$384); thus very high sensor resolution is less important than high frame rate and low capture latency. A camera that delivers 720p or 1080p at 60\,FPS over USB 3.0 (UVC) usually adds only a few milliseconds to the pipeline. Field of view should cover the user's full body (or at least lower body and trunk) when standing in front of the sensor. For the Architect scenario, a single frontal or slightly angled camera is sufficient; multi-camera setups can improve robustness but increase cost and complexity. Cameras designed primarily for recording (e.g.\ many action cameras) typically introduce high sensor-to-display latency over USB or Wi-Fi (often 200\,ms or more), exceeding the 63\,ms cybersickness threshold \cite{stauffert2021latency, waltemate2016impact}; they are therefore unsuitable for low-latency VR feedback, and the thesis relies on UVC-class devices instead.
+Pose estimation models typically resize input to modest resolutions (e.g.\ 256$\times$256 or 384$\times$384); thus very high sensor resolution is less important than high frame rate and low capture latency. Field of view should cover the user's full body (or at least lower body and trunk) when standing in front of the sensor. For the Architect scenario, a single frontal or slightly angled camera is sufficient. To minimise capture latency, the thesis targets industrial or machine-vision cameras with USB 3.0 (UVC or USB3 Vision), global shutter, and high frame rate (60\,fps or higher); see Table~\ref{tab:camera-options}.
 
-\subsection{Sensor options and recommendation}
+\paragraph{Capture latency composition.}
+The capture stage contributes: (1)~\emph{exposure}---the time the sensor collects light; (2)~\emph{readout}---transfer of pixel data off the sensor; and (3)~\emph{transfer}---delivery to the host over USB. Shorter exposure reduces motion blur; sensors with larger pixels allow shorter exposure for a given brightness. Global shutter gives a well-defined capture instant and avoids rolling-shutter artefacts. Minimising buffering (e.g.\ single-frame buffer) ensures the host uses the newest frame.
 
-Sensors commonly used for real-time pose estimation in VR and telerehabilitation are UVC-class RGB webcams and, increasingly, dedicated vision modules with on-device inference. Martínez-García et al.\ \cite{mdpi2022exercam} demonstrated that a simple RGB webcam with real-time pose estimation (OpenPose and similar) is feasible for telerehabilitation and acceptable in home environments, supporting the use of consumer-grade cameras in the lab. Table~\ref{tab:camera-options} summarises options relevant to the thesis and to lab procurement (e.g.\ budget under 200\,EUR for additional hardware if needed).
+\paragraph{Monochrome vs.\ colour.}
+For the lowest capture latency, monochrome sensors are preferred over RGB: they avoid Bayer demosaicing (faster readout) and have higher sensitivity, allowing shorter exposure for a given scene. Pose models expect three-channel input; a monochrome frame can be replicated to three channels (e.g.\ one memory copy or a single \texttt{COLOR\_GRAY2BGR}-style conversion) before inference without retraining. This replication adds only microseconds (negligible compared to capture and inference, which are in the millisecond range), so the net effect of choosing monochrome remains a reduction in capture latency. Where minimal latency is the priority, a monochrome industrial camera is therefore the better choice.
+
+\paragraph{Recommended sensors.}
+Industrial and machine-vision cameras (e.g.\ Edmund Optics IDS, Point Grey / Teledyne FLIR Flea3 or Blackfly S) offer global shutter, USB3 Vision, 60\,fps or higher, and larger pixel sizes (e.g.\ 4--5\,\textmu m) for low capture delay. Table~\ref{tab:camera-options} summarises options used or considered for this thesis.
 
 \begin{table}[htbp]
 \centering
-\caption{Sensor options for real-time pose estimation in VR rehab (lab use; approximate prices).}
+\caption{Cameras suited to low-latency capture for the pose pipeline (lab use).}
 \label{tab:camera-options}
-\begin{tabularx}{\textwidth}{@{}lXlX@{}}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.8cm}Xp{2.2cm}@{}}
 \toprule
-Sensor / type & Interface & Typical latency & Suitability \\
+Camera & Interface \& key specs & Role \\
 \midrule
-Standard USB 3.0 webcam (720p60) & UVC & $<$30\,ms & Suitable \\
-Logitech Brio / C920-class & UVC & $<$50\,ms & Suitable \\
-OAK-1 Lite (on-device AI) & USB 3 & Low (on-device) & Optional ($\sim$99) \\
-Recording-oriented (e.g.\ action cam, USB/Wi-Fi) & NCM, MPEG-TS & 200\,ms+ & Not suitable for VR \\
+IDS (e.g.\ U3-3060CP-M-GL), FLIR Flea3 / Blackfly S & USB3 Vision; global shutter; 60--160+\,fps; mono or colour & Preferred for minimal capture latency \\
+OAK-1 Lite & USB 3; on-device inference & Optional vision module \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\noindent\textit{Abbreviations:} UVC = USB Video Class; NCM = Network Control Model.
-
-For the present project, a standard RGB camera (e.g.\ USB 3.0, 60\,FPS or higher) is the primary recommendation; if the lab considers a dedicated vision module, the OAK-1 Lite offers on-device inference at low latency within the stated budget. Existing lab equipment that meets UVC 60\,FPS and low-latency capture is compatible with the MMPose/RTMPose pipeline.
+For the present project, an industrial monochrome camera (e.g.\ IDS or FLIR with global shutter and high frame rate) is recommended for the capture stage; the pipeline accepts monochrome input by replicating to three channels before pose inference.
 
 % ---------------------------------------------------------------------------
 \section{Summary and Research Gap}
@@ -149,4 +182,4 @@ For the present project, a standard RGB camera (e.g.\ USB 3.0, 60\,FPS or higher
 
 Existing VR rehabilitation setups often rely on tracking solutions with high end-to-end latency (on the order of 200\,ms), leading to laggy avatar behaviour, reduced presence, and increased risk of simulator sickness. At the same time, conventional knee rehabilitation exercises frequently suffer from low engagement and compliance. This thesis addresses both issues by (1) developing a low-latency ML-based motion tracking system using a standard RGB camera and MMPose/RTMPose, with a target tracking loop under 10\,ms, and (2) implementing a gamified ``Architect'' prototype for single-leg balance that uses an external focus of attention.
 
-Prior work covers real-time pose estimation \cite{Jiang.2023, Lugaresi.2019}, latency and cybersickness thresholds \cite{stauffert2021latency, waltemate2016impact}, VR-based reflection and feedback for rehabilitation \cite{kim2020vrrt, klausing2025feasibility}, proprioception-focused knee rehab \cite{jogi2024proprioception}, and the role of external focus in balance \cite{sherman2021external}. Tools to evaluate VR movement tolerability and simulator sickness have been developed in the same research context \cite{Hollaus.2024}. However, there is no reported system that combines \emph{low-latency} (sub-30\,ms, targeting sub-10\,ms for the tracking component) \emph{markerless} skeletal tracking via a consumer RGB camera with a \emph{gamified}, goal-oriented single-leg balance task in VR for knee rehabilitation, and that is evaluated for both system feel (responsiveness) and engagement compared to standard visual feedback. This gap is what the present thesis aims to fill through the development of the tracking pipeline, the Architect prototype, and a pilot user evaluation. The following chapters describe the methodology, implementation, and evaluation that address this gap.
+Prior work covers real-time pose estimation \cite{Jiang.2023, Lugaresi.2019}, latency and cybersickness thresholds \cite{caserman2019latency, waltemate2016impact}, VR-based reflection and feedback for rehabilitation \cite{kim2020vrrt, klausing2025feasibility}, proprioception-focused knee rehab \cite{jogi2024proprioception}, and the role of external focus in balance \cite{sherman2021external}. Tools to evaluate VR movement tolerability and simulator sickness have been developed in the same research context \cite{Hollaus.2024}. However, there is no reported system that combines \emph{low-latency} (sub-30\,ms, targeting sub-10\,ms for the tracking component) \emph{markerless} skeletal tracking via a consumer RGB camera with a \emph{gamified}, goal-oriented single-leg balance task in VR for knee rehabilitation, and that is evaluated for both system feel (responsiveness) and engagement compared to standard visual feedback. This gap is what the present thesis aims to fill through the development of the tracking pipeline, the Architect prototype, and a pilot user evaluation. The following chapters describe the methodology, implementation, and evaluation that address this gap.

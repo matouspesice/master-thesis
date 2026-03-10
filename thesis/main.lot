@@ -3,9 +3,9 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Representative RTMPose variants: latency and throughput (from \cite {Jiang.2023} and literature).}}{5}{table.caption.6}%
-\contentsline {table}{\numberline {2.2}{\ignorespaces Reported latency thresholds relevant to VR rehabilitation (motion-to-photon or tracking delay).}}{5}{table.caption.7}%
-\contentsline {table}{\numberline {2.3}{\ignorespaces Sensor options for real-time pose estimation in VR rehab (lab use; approximate prices).}}{8}{table.caption.8}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Representative RTMPose variants: latency and throughput (from \cite {Jiang.2023} and literature).}}{5}{table.caption.7}%
+\contentsline {table}{\numberline {2.2}{\ignorespaces Reported latency thresholds relevant to VR rehabilitation (motion-to-photon or tracking delay).}}{6}{table.caption.8}%
+\contentsline {table}{\numberline {2.3}{\ignorespaces Cameras suited to low-latency capture for the pose pipeline (lab use).}}{9}{table.caption.12}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

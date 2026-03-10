@@ -3,7 +3,9 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Motion-to-photon latency pipeline: capture $\rightarrow $ pose inference (Python) $\rightarrow $ UDP $\rightarrow $ Unity (parse, drive avatar, render) $\rightarrow $ display. The text under each stage describes the main optimisation levers for that stage (e.g.\ camera choice and buffer size for capture; model size and detector frequency for inference; parsing, avatar update, and rendering for Unity).}}{4}{figure.caption.6}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces High-level system architecture: from camera capture to pose inference, UDP broadcast of keypoints, and the Unity-based Architect application.}}{11}{figure.caption.13}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

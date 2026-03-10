@@ -7,7 +7,26 @@
 
 \section{System Overview}
 
-The system consists of a motion capture pipeline (single RGB camera and ML-based pose estimation) and a screen-based application (Architect game in Unity) that displays an avatar driven by the estimated pose. The high-level flow is: camera capture $\rightarrow$ pose inference (MMPose/RTMPose) $\rightarrow$ UDP broadcast of keypoints $\rightarrow$ Unity receives and drives the avatar. This chapter specifies the motion capture pipeline and gamification design; the implementation chapter describes the actual software and hardware setup and latency measurement.
+The system consists of a motion capture pipeline (single RGB camera and ML-based pose estimation) and a screen-based application (Architect game in Unity) that displays an avatar driven by the estimated pose. Figure~\ref{fig:system-architecture} shows the high-level flow: camera capture $\rightarrow$ pose inference (MMPose/RTMPose) $\rightarrow$ UDP broadcast of keypoints $\rightarrow$ Unity receives and drives the avatar. This chapter specifies the motion capture pipeline and gamification design; the implementation chapter describes the actual software and hardware setup and latency measurement.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      node distance=0.9cm and 1.4cm,
+      box/.style={rectangle, draw, rounded corners=2pt, minimum height=0.8cm, minimum width=2.2cm, font=\small, align=center},
+      arrow/.style={-{Stealth[length=2mm]}, thick}
+    ]
+    \node[box] (cam) {RGB camera};
+    \node[box, right=of cam] (pose) {Pose inference\\MMPose/RTMPose};
+    \node[box, right=of pose] (udp) {UDP\\keypoints};
+    \node[box, right=of udp] (unity) {Unity\\Architect};
+    \draw[arrow] (cam) -- (pose);
+    \draw[arrow] (pose) -- (udp);
+    \draw[arrow] (udp) -- (unity);
+  \end{tikzpicture}
+  \caption{High-level system architecture: from camera capture to pose inference, UDP broadcast of keypoints, and the Unity-based Architect application.}
+  \label{fig:system-architecture}
+\end{figure}
 
 \section{Motion Capture Pipeline}\label{sec:motion-capture}
 

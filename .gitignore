@@ -17,7 +17,11 @@ __pycache__/
 *$py.class
 .env
 .venv
+.venv_flir/
 venv/
+
+# Spinnaker SDK (large, install separately)
+spinnaker_python-*/
 
 # Unity (app and architect)
 app/[Ll]ibrary/

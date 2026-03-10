@@ -1,0 +1,14 @@
+{
+  "camera": 0,
+  "backend": "rtmlib",
+  "device": "cuda",
+  "mode": "lightweight",
+  "det_frequency": 10,
+  "width": 640,
+  "height": 480,
+  "threaded": true,
+  "no_viz": false,
+  "show_fps": true,
+  "udp_port": 5555,
+  "udp_host": "127.0.0.1"
+}
